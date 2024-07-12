@@ -31,6 +31,10 @@
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/listview_app_widget_config" />
         </receiver>
+
+        <service
+            android:name=".app_widget.service.ListViewWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
         
     </application>
 </manifest>
