@@ -1,14 +1,25 @@
 package aayushsharma.me.home_widget_listview_example.app_widget
 
 import aayushsharma.me.home_widget_listview_example.R
+import aayushsharma.me.home_widget_listview_example.app_widget.models.NewsArticle
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class ListViewRemoteViewsFactory(private val context: Context, private val intent: Intent?) : RemoteViewsService.RemoteViewsFactory{
+    private var articles: List<NewsArticle>? = null
     override fun onCreate() {
+        val articlesJson: String? = intent?.extras?.getString("ARTICLES_JSON","")
+
+        if(articlesJson != null) {
+            val articleListType = object : TypeToken<List<NewsArticle>>() {}.type
+            val data: List<NewsArticle> = Gson().fromJson(articlesJson, articleListType)
+            articles = data
+        }
     }
 
     override fun onDataSetChanged() {
@@ -18,12 +29,13 @@ class ListViewRemoteViewsFactory(private val context: Context, private val inten
     }
 
     override fun getCount(): Int {
-        return 10
+        return articles!!.size
     }
 
     override fun getViewAt(position: Int): RemoteViews {
+        val article: NewsArticle = articles!![position]
         val views = RemoteViews(context.packageName, R.layout.list_tile)
-        views.setTextViewText(R.id.title, "Sample title. Position: $position")
+        views.setTextViewText(R.id.title, article.title)
         views.setImageViewResource(R.id.header_image, R.drawable.ic_launcher)
 
         val fillInIntent = Intent()
