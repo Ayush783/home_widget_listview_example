@@ -39,6 +39,18 @@ class ListViewAppWidgetProvider : HomeWidgetProvider() {
         }
     }
 
+    override fun onReceive(context: Context?, intent: Intent?) {
+        super.onReceive(context, intent)
+        val action = intent?.action
+        if (action == "com.example.listview_app_widget.refresh") {
+            val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+            val loader = RemoteViews(context!!.packageName, R.layout.listview_widget_loader)
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            appWidgetManager.updateAppWidget(appWidgetId, loader)
+            initiateWorkRequest(context!!, appWidgetId)
+        }
+    }
+
     private fun initiateWorkRequest(context: Context, id: Int) {
         val workRequest: WorkRequest = OneTimeWorkRequest.Builder(UpdateWidgetWorker::class.java).setInputData(
             Data.Builder().putInt("widgetId", id).build()
@@ -64,6 +76,8 @@ class ListViewAppWidgetProvider : HomeWidgetProvider() {
             )
             views.setPendingIntentTemplate(R.id.listview_app_widget, pendingIntentWithData)
 
+            views.setOnClickPendingIntent(R.id.refresh_button, getRefreshPendingIntent(context, widgetId))
+
             return views
         }
 
@@ -77,6 +91,19 @@ class ListViewAppWidgetProvider : HomeWidgetProvider() {
             }
 
             return PendingIntent.getActivity(context, 0, intent, flags)
+        }
+
+        private fun getRefreshPendingIntent(context: Context, widgetId: Int): PendingIntent {
+            val refreshIntent = Intent(context, ListViewAppWidgetProvider::class.java)
+            refreshIntent.action = "com.example.listview_app_widget.refresh"
+            refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+
+            var flags = PendingIntent.FLAG_UPDATE_CURRENT
+            if (Build.VERSION.SDK_INT >= 23) {
+                flags = flags or PendingIntent.FLAG_IMMUTABLE
+            }
+
+            return PendingIntent.getBroadcast(context, 0, refreshIntent, flags)
         }
     }
 }

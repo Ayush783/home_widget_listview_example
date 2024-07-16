@@ -30,7 +30,6 @@ class UpdateWidgetWorker(context: Context, workerParams: WorkerParameters) : Cor
         return try {
             val response: Response = client.newCall(request).execute()
             val responseData = response.body?.string()
-            Log.d("WorkerRes", responseData.toString())
             if (response.isSuccessful && responseData != null) {
                 val jsonObject = JSONObject(responseData)
                 val data = jsonObject.getJSONArray("articles")
